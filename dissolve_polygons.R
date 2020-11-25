@@ -18,8 +18,8 @@ library(sp)
 require(raster)
 
 # set workspace & load data
-setwd("D:/googledrive/data_confobi_deadwood/mask_r_cnn_output/pred_2016_benchmark/")
-trees = readOGR(dsn = getwd(), layer = "CFB007_ORTHO_RGB_2016_shp")
+#setwd("")
+trees = readOGR(dsn = getwd(), layer = "example_file")
 trees = gBuffer(trees, byid=TRUE, width=0)
 
 # only consider lying trees
