@@ -15,15 +15,17 @@
 require(rgdal)
 require(rgeos)
 library(sp)
-require(raster)
+
 
 # set workspace & load data
-#setwd("")
+setwd()
 trees = readOGR(dsn = getwd(), layer = "example_file")
 trees = gBuffer(trees, byid=TRUE, width=0)
+output_name = "example_file_diss"
 
-# only consider lying trees
-trees_l = trees[which(trees$class==0),]
+# select a polygon class (in this example standing = 1 or lying dead trees = 0)
+selector = 0
+trees_l = trees[which(trees$class==selector),]
 
 
 ##filter features by minum size (reduces computation time)
@@ -54,6 +56,9 @@ combinations = t(combn(1:length(trees_l), 2))
 i = 1
 i_0 = 1
 
+
+
+
 while(i != nrow(combinations)){
   
   ID1 = combinations[i,1]
@@ -72,10 +77,10 @@ while(i != nrow(combinations)){
       area_intersect = gArea(gIntersection(trees_l[ID1,], trees_l[ID2,]))
       if(area_intersect/gArea(trees_l[ID1,]) > intersect_threshold || area_intersect/gArea(trees_l[ID2,]) > intersect_threshold){
         
-        poly_cominbed = aggregate(trees_l[c(ID1,ID2),], dissolve = TRUE, FUN=mean)
-        poly_cominbed$ID <- NULL
+        poly_combined = aggregate(trees_l[c(ID1,ID2),], dissolve = TRUE, FUN=mean)
+        poly_combined$ID <- NULL
         trees_l = trees_l[-c(ID1, ID2),]
-        trees_l = rbind(trees_l,poly_cominbed)
+        trees_l = rbind(trees_l,poly_combined)
         
         combinations = t(combn(1:length(trees_l), 2))
         i = 1
@@ -97,4 +102,10 @@ while(i != nrow(combinations)){
 
 
 # export new shapefile
-shapefile(x = trees_l, file = "test123.shp")
+require(raster)
+if(selector = 0){
+  shapefile(x = trees_l, file = paste0(output_name,"_lying.shp"))
+}else{
+  shapefile(x = trees_l, file = paste0(output_name,"_standing.shp"))
+}
+
